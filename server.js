@@ -1,45 +1,38 @@
 import express from "express";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-// middleware to parse JSON requests
 app.use(express.json());
 
-// in-memory storage for sensor data
-let sensorData = [];
+let latestData = null;
 
-// 🌱 Route to receive Pico sensor data
 app.post("/test", (req, res) => {
   console.log("📡 Received Data:", req.body);
 
-  const data = {
+  latestData = {
     ...req.body,
-    timestamp: new Date().toISOString() // add a timestamp
+    timestamp: new Date().toISOString()
   };
-
-  // save to memory
-  sensorData.push(data);
 
   res.status(200).json({
     message: "✅ Data received successfully",
-    received: data
+    received: latestData
   });
 });
 
-// 🌱 Route to fetch all stored sensor data
 app.get("/fetch", (req, res) => {
-  res.json({
-    count: sensorData.length,
-    data: sensorData
-  });
+  if (latestData) {
+    res.json(latestData);
+  } else {
+    res.status(404).json({ message: "⚠️ No data available yet" });
+  }
 });
 
-// health check
 app.get("/", (req, res) => {
   res.send("🌱 Pico Multi-Sensor API is running...");
 });
 
 app.listen(PORT, () => {
-  console.log(🚀 Server running on port ${PORT});
+  console.log(`🚀 Server running on port ${PORT}`);
 });
